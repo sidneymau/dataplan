@@ -1,0 +1,13 @@
+[project]
+name = "dataplan"
+license = {file = "LICENSE"}
+readme = "README.md"
+description = ""
+authors = [
+    {name = "Sidney Mau", email = "sidneymau@gmail.com" }
+]
+dynamic = ["version"]
+dependencies = [
+    "numpy",
+    "pyarrow",
+]
