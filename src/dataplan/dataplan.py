@@ -54,7 +54,7 @@ class DataPlan:
         """
         Construct a DataPlan from a list.
         """
-        table = pa.Table.from_pydict(mapping, **kwargs)
+        table = pa.Table.from_pylist(mapping, **kwargs)
         _plan = declare_table(table)
         return cls(_plan, source=mapping)
 
