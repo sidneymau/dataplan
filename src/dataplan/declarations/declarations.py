@@ -137,6 +137,8 @@ def declare_join(
     join_type,
     left_keys,
     right_keys,
+    left_output=None,
+    right_output=None,
     left_suffix=None,
     right_suffix=None,
 ):
@@ -144,6 +146,8 @@ def declare_join(
         join_type,
         left_keys,
         right_keys,
+        left_output=left_output,
+        right_output=right_output,
         output_suffix_for_left=left_suffix or "",
         output_suffix_for_right=right_suffix or "",
     )
