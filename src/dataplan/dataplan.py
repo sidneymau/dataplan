@@ -1,3 +1,6 @@
+import functools
+import operator
+
 import numpy as np
 import pyarrow as pa
 
@@ -23,20 +26,26 @@ class DataPlan:
         Construct a DataPlan from an existing plan
         """
         self._plan = plan
-        self._source = source
+        if isinstance(source, list):
+            self._source = source
+        else:
+            self._source = [source]
 
     def __repr__(self):
         plan_repr = str(self.plan)
         if self.source is not None:
-            source_repr = f"{type(self.source)} at {hex(id(self.source))}"
+            source_repr = "\n  ".join([
+                f"{type(source)} at {hex(id(source))}"
+                for source in self.source
+            ])
         else:
             source_repr = None
         return (
             f"DataPlan\n"
             f"--------------------------------------------------------------------------------\n"
-            f"plan: {plan_repr}\n"
+            f"{plan_repr}\n"
             f"--------------------------------------------------------------------------------\n"
-            f"source: {source_repr}\n"
+            f"Sources:\n  {source_repr}\n"
             f"--------------------------------------------------------------------------------"
         )
 
@@ -117,14 +126,30 @@ class DataPlan:
         Perform a join with another DataPlan.
         """
         _join = declare_join(self.plan, other.plan, *args, **kwargs)
-        return self.__class__(_join, source=self.source)
+        _source = [self.source, other.source]
+        source = list(
+            functools.reduce(
+                operator.concat,
+                _source,
+                [],
+            ),
+        )
+        return self.__class__(_join, source=source)
 
     def join_asof(self, other, *args, **kwargs):
         """
         Perform an asof join with another DataPlan.
         """
         _join = declare_join_asof(self.plan, other.plan, *args, **kwargs)
-        return self.__class__(_join, source=self.source)
+        _source = [self.source, other.source]
+        source = list(
+            functools.reduce(
+                operator.concat,
+                _source,
+                [],
+            ),
+        )
+        return self.__class__(_join, source=source)
 
     def order_by(self, *args, **kwargs):
         """
@@ -144,18 +169,21 @@ class DataPlan:
         """
         Execute the plan lazily as a reader.
         """
+        print(f"Executing {self}\n-> RecordBatchReader")
         return self.plan.to_reader(use_threads=use_threads)
 
     def to_table(self, use_threads=True):
         """
         Execute the plan and return a pyarrow Table.
         """
+        print(f"Executing {self}\n-> Table")
         return self.plan.to_table(use_threads=use_threads)
 
     def to_batches(self, use_threads=True):
         """
         Execute the plan and return a list of pyarrow RecordBatches.
         """
+        print(f"Executing {self}\n-> [RecordBatch]")
         table = self.to_table(use_threads=use_threads)
         return table.to_batches()
 
@@ -163,6 +191,7 @@ class DataPlan:
         """
         Execute the plan and return a pandas DataFrame.
         """
+        print(f"Executing {self}\n-> DataFrame")
         table = self.to_table(use_threads=use_threads)
         return table.to_pandas()
 
@@ -170,6 +199,7 @@ class DataPlan:
         """
         Execute the plan and return a dictionary of columns.
         """
+        print(f"Executing {self}\n-> dict")
         table = self.to_table(use_threads=use_threads)
         return table.to_pydict()
 
@@ -177,6 +207,7 @@ class DataPlan:
         """
         Execute the plan and return a list of rows.
         """
+        print(f"Executing {self}\n-> list")
         table = self.to_table(use_threads=use_threads)
         return table.to_pylist()
 
@@ -184,6 +215,7 @@ class DataPlan:
         """
         Execute the plan and return a numpy record array.
         """
+        print(f"Executing {self}\n-> recarray")
         table = self.to_table(use_threads=use_threads)
         return np.rec.fromarrays(table.columns, names=table.schema.names)
 
@@ -191,6 +223,7 @@ class DataPlan:
         """
         Execute the plan and return a numpy array.
         """
+        print(f"Executing {self}\n-> ndarray")
         table = self.to_table(use_threads=use_threads)
         data = [col.to_numpy() for col in table.itercolumns()]
         dtype = []
