@@ -165,26 +165,38 @@ class DataPlan:
         _aggregate = declare_aggregate(self.plan, *args, **kwargs)
         return self.__class__(_aggregate, source=self.source)
 
+    def _to_reader(self, use_threads=True):
+        """
+        Execute the plan lazily as a reader.
+        """
+        return self.plan.to_reader(use_threads=use_threads)
+
+    def _to_table(self, use_threads=True):
+        """
+        Execute the plan and return a pyarrow Table.
+        """
+        return self.plan.to_table(use_threads=use_threads)
+
     def to_reader(self, use_threads=True):
         """
         Execute the plan lazily as a reader.
         """
         print(f"Executing {self}\n-> RecordBatchReader")
-        return self.plan.to_reader(use_threads=use_threads)
+        return self._to_reader(use_threads=use_threads)
 
     def to_table(self, use_threads=True):
         """
         Execute the plan and return a pyarrow Table.
         """
         print(f"Executing {self}\n-> Table")
-        return self.plan.to_table(use_threads=use_threads)
+        return self._to_table(use_threads=use_threads)
 
     def to_batches(self, use_threads=True):
         """
         Execute the plan and return a list of pyarrow RecordBatches.
         """
         print(f"Executing {self}\n-> [RecordBatch]")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         return table.to_batches()
 
     def to_dataframe(self, use_threads=True):
@@ -192,7 +204,7 @@ class DataPlan:
         Execute the plan and return a pandas DataFrame.
         """
         print(f"Executing {self}\n-> DataFrame")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         return table.to_pandas()
 
     def to_dict(self, use_threads=True):
@@ -200,7 +212,7 @@ class DataPlan:
         Execute the plan and return a dictionary of columns.
         """
         print(f"Executing {self}\n-> dict")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         return table.to_pydict()
 
     def to_list(self, use_threads=True):
@@ -208,7 +220,7 @@ class DataPlan:
         Execute the plan and return a list of rows.
         """
         print(f"Executing {self}\n-> list")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         return table.to_pylist()
 
     def to_records(self, use_threads=True):
@@ -216,7 +228,7 @@ class DataPlan:
         Execute the plan and return a numpy record array.
         """
         print(f"Executing {self}\n-> recarray")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         return np.rec.fromarrays(table.columns, names=table.schema.names)
 
     def to_array(self, use_threads=True):
@@ -224,7 +236,7 @@ class DataPlan:
         Execute the plan and return a numpy array.
         """
         print(f"Executing {self}\n-> ndarray")
-        table = self.to_table(use_threads=use_threads)
+        table = self._to_table(use_threads=use_threads)
         data = [col.to_numpy() for col in table.itercolumns()]
         dtype = []
         for field in table.schema:
