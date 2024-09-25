@@ -255,12 +255,18 @@ class DataPlan:
 
 class DataPlanGroupBy:
     def __init__(self, dataplan, keys):
+        if isinstance(keys, str):
+            keys = [keys]
+
         self._dataplan = dataplan
-        self._keys = keys
+        self.keys = keys
 
     def __repr__(self):
         dataplan_repr = f"{type(self.dataplan)} at {hex(id(self.dataplan))}"
-        key_repr = "\n  ".join(self.keys)
+        if isinstance(self.keys, list):
+            key_repr = "\n  ".join(self.keys)
+        else:
+            key_repr = self.keys
         return (
             f"DataPlanGroupBy\n"
             f"--------------------------------------------------------------------------------\n"
@@ -276,13 +282,6 @@ class DataPlanGroupBy:
         The dataplan to group.
         """
         return self._dataplan
-
-    @property
-    def keys(self):
-        """
-        The keys by which to group aggregates.
-        """
-        return self._keys
 
     def aggregate(self, aggregations):
         """
