@@ -260,9 +260,14 @@ class DataPlanGroupBy:
 
     def __repr__(self):
         dataplan_repr = f"{type(self.dataplan)} at {hex(id(self.dataplan))}"
-        key_repr = ", ".join(self.keys)
+        key_repr = "\n  ".join(self.keys)
         return (
-            f"DataPlanGroupBy: {dataplan_repr} by {key_repr}"
+            f"DataPlanGroupBy\n"
+            f"--------------------------------------------------------------------------------\n"
+            f"{dataplan_repr}\n"
+            f"--------------------------------------------------------------------------------\n"
+            f"keys:\n  {key_repr}\n"
+            f"--------------------------------------------------------------------------------\n"
         )
 
     @property
