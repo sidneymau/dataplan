@@ -248,3 +248,42 @@ class DataPlan:
             _dtype = (field.name, np_dtype)
             dtype.append(_dtype)
         return np.array(list(zip(*data)), dtype=dtype)
+
+    def group_by(self, keys):
+        return DataPlanGroupBy(self, keys)
+
+
+class DataPlanGroupBy:
+    def __init__(self, dataplan, keys):
+        self._dataplan = dataplan
+        self._keys = keys
+
+    def __repr__(self):
+        dataplan_repr = f"{type(self.dataplan)} at {hex(id(self.dataplan))}"
+        key_repr = ", ".join(self.keys)
+        return (
+            f"DataPlanGroupBy: {dataplan_repr} by {key_repr}"
+        )
+
+    @property
+    def dataplan(self):
+        """
+        The dataplan to group.
+        """
+        return self._dataplan
+
+    @property
+    def keys(self):
+        """
+        The keys by which to group aggregates.
+        """
+        return self._keys
+
+    def aggregate(self, aggregations):
+        """
+        Perform a series of aggregations over the groups.
+        """
+        return self.dataplan.aggregate(
+            aggregations,
+            keys=self.keys,
+        )
