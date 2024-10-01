@@ -110,6 +110,8 @@ def declare_dataset(dataset, columns=None, filter=None):
         # filter_expression = pq.filters_to_expression(filter)
         filter_expression = _parse_filters(filter)
 
+    scan_filter_expression = dataset._scan_options.get("filter")
+
     decl = acero.Declaration(
         "scan",
         acero.ScanNodeOptions(
@@ -122,6 +124,9 @@ def declare_dataset(dataset, columns=None, filter=None):
     # While the dataset scan can apply pushdown projections and filters to
     # minimize which data are read, it does not construct the associated nodes
     # that perform these operations. Therefore, we explicitly do so here.
+    if scan_filter_expression is not None:
+        decl = declare_filter(decl, scan_filter_expression)
+
     if filter_expression is not None:
         decl = declare_filter(decl, filter_expression)
 
